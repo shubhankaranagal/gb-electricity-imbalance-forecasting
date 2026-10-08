@@ -22,10 +22,12 @@ LIVE_URL = (
 
 PRODUCTION_DIR = PROJECT_ROOT / "data" / "production"
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
-MODEL_DIR = PROCESSED_DIR / "models" / "multi_horizon"
+MODEL_DIR = (
+    PROJECT_ROOT / "deployment" / "models"
+)
 
 NETWORK_PATH = (
-    PRODUCTION_DIR / "current_network.parquet"
+    PROJECT_ROOT / "deployment" / "current_network.parquet"
 )
 
 HISTORY_PATH = (
