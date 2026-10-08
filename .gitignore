@@ -9,6 +9,13 @@ __pycache__/
 # Data
 data/raw/
 data/processed/
+*.parquet
+
+# Data
+data/
+notebooks/data/
+notebooks/processed/
+*.parquet
 
 # Environment / secrets
 .env
@@ -16,3 +23,16 @@ data/processed/
 # OS
 .DS_Store
 Thumbs.db
+
+# Small files required for live deployment
+!deployment/current_network.parquet
+
+# Re-open only the production directory
+!data/
+data/*
+!data/production/
+data/production/*
+!data/production/live_history.parquet
+!data/production/live_forecasts.parquet
+
+
