@@ -1,3 +1,4 @@
+
 # Canberra Traffic Forecasting
 
 **An end-to-end machine learning system for forecasting road-level traffic congestion in Canberra, Australia.**
@@ -49,14 +50,16 @@ Absolute travel time is heavily influenced by road-segment length. A two-minute 
 
 To make congestion comparable across different roads, the primary forecasting target is **relative delay**:
 
-$
-RD_{i,t}=\frac{TT_{i,t}-MinTT_{i,t}}{MinTT_{i,t}}
-$
+```math
+RD_{i,t} = \frac{TT_{i,t} - MinTT_{i,t}}{MinTT_{i,t}}
+```
 
 where:
 
-- $TT_{i,t}$ is observed travel time for road segment $i$ at time $t$.
-- $MinTT_{i,t}$ is the segment's reference free-flow travel time.
+- `TT` is observed travel time for a road segment.
+- `MinTT` is the segment's reference free-flow travel time.
+- `i` identifies the directed road segment.
+- `t` identifies the observation time.
 
 For example, a relative delay of 0.50 indicates that the journey takes 50% longer than its free-flow reference.
 
@@ -74,9 +77,11 @@ This distinction matters: a statistically available target is not necessarily th
 
 For each directed road segment, predict:
 
-$ \widehat{RD}_{i,t+h} $
+```math
+\widehat{RD}_{i,t+h}
+```
 
-for horizons $h \in \{15,30,60,120\}$ minutes, using only information available at prediction time.
+for horizons of 15, 30, 60 and 120 minutes, using only information available at prediction time.
 
 Predictions are also converted into absolute delay and expected segment travel time using the current free-flow reference.
 
@@ -142,7 +147,9 @@ Model selection was performed before evaluation on the held-out test period.
 
 The primary benchmark is persistence:
 
-$\widehat{RD}_{i,t+h}=RD_{i,t}$
+```math
+\widehat{RD}_{i,t+h} = RD_{i,t}
+```
 
 Persistence is a natural reference for short-term traffic forecasting, where current congestion often contains substantial predictive information.
 
@@ -295,3 +302,4 @@ Potential extensions include:
 ---
 
 **Project focus:** Spatiotemporal forecasting, statistical modelling, feature engineering, time-series evaluation, data pipelines and live machine-learning deployment.
+
