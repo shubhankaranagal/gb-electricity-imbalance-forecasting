@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Canberra Traffic Forecast</title>
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+</head>
+
+<body>
+
+    <div id="map"></div>
+
+
+    <!-- ==================================================
+         HEADER
+    =================================================== -->
+
+    <header class="topbar">
+
+        <div class="brand">
+
+            <div class="brand-title">
+                Canberra Traffic Forecast
+            </div>
+
+            <div class="brand-subtitle">
+                Live machine-learning congestion forecasts
+            </div>
+
+        </div>
+
+
+        <div class="status">
+
+            <div
+                id="status-dot"
+                class="status-dot"
+            ></div>
+
+            <div>
+
+                <div
+                    id="status-main"
+                    class="status-main"
+                >
+                    Loading live traffic…
+                </div>
+
+                <div
+                    id="status-sub"
+                    class="status-sub"
+                >
+                    Connecting to forecast feed
+                </div>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- ==================================================
+         FORECAST HORIZON CONTROL
+    =================================================== -->
+
+    <div class="horizon-panel">
+
+        <div class="control-label">
+            FORECAST HORIZON
+        </div>
+
+        <div class="horizon-buttons">
+
+            <button
+                class="horizon-button active"
+                data-horizon="now"
+            >
+                Now
+            </button>
+
+            <button
+                class="horizon-button"
+                data-horizon="15"
+            >
+                +15
+                <span>min</span>
+            </button>
+
+            <button
+                class="horizon-button"
+                data-horizon="30"
+            >
+                +30
+                <span>min</span>
+            </button>
+
+            <button
+                class="horizon-button"
+                data-horizon="60"
+            >
+                +60
+                <span>min</span>
+            </button>
+
+            <button
+                class="horizon-button"
+                data-horizon="120"
+            >
+                +120
+                <span>min</span>
+            </button>
+
+        </div>
+
+        <div
+            id="selected-time"
+            class="selected-time"
+        >
+            Current conditions
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================
+         LEGEND
+    =================================================== -->
+
+    <div class="legend-panel">
+
+        <div class="control-label">
+            RELATIVE DELAY
+        </div>
+
+        <div class="legend-gradient"></div>
+
+        <div class="legend-labels">
+
+            <span>Free flow</span>
+            <span>+50%</span>
+            <span>+100%+</span>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================
+         ROAD INFORMATION
+    =================================================== -->
+
+    <aside
+        id="road-panel"
+        class="road-panel hidden"
+    >
+
+        <button
+            id="close-road-panel"
+            class="close-button"
+            aria-label="Close"
+        >
+            ×
+        </button>
+
+        <div class="road-panel-label">
+            ROAD SEGMENT
+        </div>
+
+        <h2 id="road-name">
+            Road name
+        </h2>
+
+
+        <div class="metric-grid">
+
+            <div class="metric">
+
+                <div class="metric-label">
+                    CURRENT
+                </div>
+
+                <div
+                    id="road-current"
+                    class="metric-value"
+                >
+                    —
+                </div>
+
+            </div>
+
+
+            <div class="metric">
+
+                <div
+                    id="road-forecast-label"
+                    class="metric-label"
+                >
+                    FORECAST
+                </div>
+
+                <div
+                    id="road-forecast"
+                    class="metric-value"
+                >
+                    —
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="change-row">
+
+            <span>
+                Expected change
+            </span>
+
+            <strong id="road-change">
+                —
+            </strong>
+
+        </div>
+
+
+        <div
+            id="road-model-status"
+            class="model-status"
+        >
+        </div>
+
+    </aside>
+
+
+    <!-- ==================================================
+         ATTRIBUTION / PROJECT INFO
+    =================================================== -->
+
+    <div class="project-note">
+
+        Forecasts generated by a multi-horizon
+        LightGBM model using live ACT traffic data.
+
+    </div>
+
+
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    ></script>
+
+    <script src="app.js"></script>
+
+</body>
+</html>
+
