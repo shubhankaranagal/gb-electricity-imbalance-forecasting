@@ -493,6 +493,7 @@ def build_features(
             "source_id",
             "source_name",
             "coordinates",
+            "mintt",
             "rd_now",
         ]
     ].copy()
@@ -725,6 +726,32 @@ def assign_status(features):
 # 7. SAVE PARQUET + FRONTEND JSON
 # ============================================================
 
+def absolute_delay_seconds(relative_delay, mintt):
+
+    if (
+        relative_delay is None
+        or mintt is None
+        or not np.isfinite(relative_delay)
+        or not np.isfinite(mintt)
+        or mintt <= 0
+    ):
+        return None
+
+    return float(relative_delay * mintt)
+
+
+def travel_time_seconds(relative_delay, mintt):
+
+    delay = absolute_delay_seconds(
+        relative_delay,
+        mintt,
+    )
+
+    if delay is None:
+        return None
+
+    return float(mintt + delay)
+
 def save_outputs(features):
 
     FORECAST_PARQUET_PATH.parent.mkdir(
@@ -749,6 +776,7 @@ def save_outputs(features):
         "coordinates",
 
         "rd_now",
+        "mintt",
 
         "rd_lag_5m",
         "rd_lag_15m",
@@ -791,86 +819,123 @@ def save_outputs(features):
 
     links = []
 
-    for row in forecasts.itertuples(
-        index=False
-    ):
+    for row in forecasts.itertuples(index=False):
 
         status = row.forecast_status
 
-        # If current traffic is unavailable,
-        # do not expose model predictions as
-        # normal forecasts in the public UI.
         usable = (
-            status
-            != "data_unavailable"
+            status != "data_unavailable"
+        )
+
+        mintt = float_or_none(
+            row.mintt
+        )
+
+        current = float_or_none(
+            row.rd_now
+        )
+
+        forecast_15 = (
+            float_or_none(row.pred_rd_15m)
+            if usable else None
+        )
+
+        forecast_30 = (
+            float_or_none(row.pred_rd_30m)
+            if usable else None
+        )
+
+        forecast_60 = (
+            float_or_none(row.pred_rd_60m)
+            if usable else None
+        )
+
+        forecast_120 = (
+            float_or_none(row.pred_rd_120m)
+            if usable else None
         )
 
         links.append(
             {
-                "origin":
-                    int_or_none(
-                        row.originsiteid
+                "origin": int_or_none(
+                    row.originsiteid
+                ),
+
+                "destination": int_or_none(
+                    row.destsiteid
+                ),
+
+                "source_id": int_or_none(
+                    row.source_id
+                ),
+
+                "name": row.source_name,
+
+                "status": status,
+
+                # Relative delay
+                "current": current,
+                "forecast_15": forecast_15,
+                "forecast_30": forecast_30,
+                "forecast_60": forecast_60,
+                "forecast_120": forecast_120,
+
+                # Free-flow travel time
+                "mintt_seconds": mintt,
+
+                # Absolute delay (seconds)
+                "current_delay_seconds":
+                    absolute_delay_seconds(
+                        current, mintt
                     ),
 
-                "destination":
-                    int_or_none(
-                        row.destsiteid
+                "forecast_15_delay_seconds":
+                    absolute_delay_seconds(
+                        forecast_15, mintt
                     ),
 
-                "source_id":
-                    int_or_none(
-                        row.source_id
+                "forecast_30_delay_seconds":
+                    absolute_delay_seconds(
+                        forecast_30, mintt
                     ),
 
-                "name":
-                    row.source_name,
-
-                "status":
-                    status,
-
-                "current":
-                    float_or_none(
-                        row.rd_now
+                "forecast_60_delay_seconds":
+                    absolute_delay_seconds(
+                        forecast_60, mintt
                     ),
 
-                "forecast_15":
-                    (
-                        float_or_none(
-                            row.pred_rd_15m
-                        )
-                        if usable
-                        else None
+                "forecast_120_delay_seconds":
+                    absolute_delay_seconds(
+                        forecast_120, mintt
                     ),
 
-                "forecast_30":
-                    (
-                        float_or_none(
-                            row.pred_rd_30m
-                        )
-                        if usable
-                        else None
+                # Expected total travel time (seconds)
+                "current_travel_time_seconds":
+                    travel_time_seconds(
+                        current, mintt
                     ),
 
-                "forecast_60":
-                    (
-                        float_or_none(
-                            row.pred_rd_60m
-                        )
-                        if usable
-                        else None
+                "forecast_15_travel_time_seconds":
+                    travel_time_seconds(
+                        forecast_15, mintt
                     ),
 
-                "forecast_120":
-                    (
-                        float_or_none(
-                            row.pred_rd_120m
-                        )
-                        if usable
-                        else None
+                "forecast_30_travel_time_seconds":
+                    travel_time_seconds(
+                        forecast_30, mintt
                     ),
 
-                "geometry":
-                    row.coordinates,
+                "forecast_60_travel_time_seconds":
+                    travel_time_seconds(
+                        forecast_60, mintt
+                    ),
+
+                "forecast_120_travel_time_seconds":
+                    travel_time_seconds(
+                        forecast_120, mintt
+                    ),
+
+                "geometry": row.coordinates,
             }
         )
 
