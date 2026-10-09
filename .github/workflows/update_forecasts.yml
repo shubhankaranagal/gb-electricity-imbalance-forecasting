@@ -1,3 +1,4 @@
+
 name: Update live Canberra forecasts
 
 on:
@@ -15,13 +16,14 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-
     timeout-minutes: 28
 
     steps:
-      - name: Checkout repository
+      - name: Checkout application code
         uses: actions/checkout@v4
         with:
+          ref: main
+          fetch-depth: 0
           persist-credentials: true
 
       - name: Set up Python
@@ -39,7 +41,14 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Collect five-minute snapshots
+      - name: Prepare production worktree
+        run: |
+          git fetch origin live-data
+          git worktree add .live-data -B live-data origin/live-data
+          git -C .live-data config user.name "github-actions[bot]"
+          git -C .live-data config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Collect and publish snapshots
         run: |
           python -u src/live/collect_burst.py
-       
+

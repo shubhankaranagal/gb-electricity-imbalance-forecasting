@@ -35,4 +35,6 @@ data/production/*
 !data/production/live_history.parquet
 !data/production/live_forecasts.parquet
 
+.live-data/
+
 

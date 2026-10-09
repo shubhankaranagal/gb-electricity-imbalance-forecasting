@@ -186,58 +186,43 @@
             Road name
         </h2>
 
+            <div class="metric-grid">
 
-        <div class="metric-grid">
-
-            <div class="metric">
-
-                <div class="metric-label">
-                    CURRENT
-                </div>
-
-                <div
-                    id="road-current"
-                    class="metric-value"
-                >
-                    —
-                </div>
-
-            </div>
-
-
-            <div class="metric">
-
-                <div
-                    id="road-forecast-label"
-                    class="metric-label"
-                >
-                    FORECAST
-                </div>
-
-                <div
-                    id="road-forecast"
-                    class="metric-value"
-                >
-                    —
-                </div>
-
-            </div>
-
+    <div class="metric">
+        <div class="metric-label">
+            CURRENT DELAY
         </div>
-
-
-        <div class="change-row">
-
-            <span>
-                Expected change
-            </span>
-
-            <strong id="road-change">
-                —
-            </strong>
-
+        <div id="road-current" class="metric-value">
+            —
         </div>
+        <div id="road-current-relative" class="metric-secondary">
+            —
+        </div>
+    </div>
 
+    <div class="metric">
+        <div id="road-forecast-label" class="metric-label">
+            FORECAST DELAY
+        </div>
+        <div id="road-forecast" class="metric-value">
+            —
+        </div>
+        <div id="road-forecast-relative" class="metric-secondary">
+            —
+        </div>
+    </div>
+
+</div>
+
+<div class="change-row">
+    <span>Expected change in delay</span>
+    <strong id="road-change">—</strong>
+</div>
+
+<div class="travel-time-row">
+    <span>Predicted segment travel time</span>
+    <strong id="road-travel-time">—</strong>
+</div>
 
         <div
             id="road-model-status"
@@ -268,4 +253,3 @@
 
 </body>
 </html>
-

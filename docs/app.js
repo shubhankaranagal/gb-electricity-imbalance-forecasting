@@ -2,7 +2,7 @@
 // CANBERRA TRAFFIC FORECAST — FRONTEND
 // ============================================================
 
-const DATA_URL = "data/latest_forecasts.json";
+const DATA_URL = "https://raw.githubusercontent.com/shubhankaranagal/gb-electricity-imbalance-forecasting/live-data/docs/data/latest_forecasts.json";
 
 const CANBERRA_CENTRE = [-35.2809, 149.1300];
 
@@ -92,6 +92,15 @@ const roadName =
 const roadCurrent =
     document.getElementById("road-current");
 
+const roadCurrentRelative =
+    document.getElementById("road-current-relative");
+
+const roadForecastRelative =
+    document.getElementById("road-forecast-relative");
+
+const roadTravelTime =
+    document.getElementById("road-travel-time");
+
 const roadForecast =
     document.getElementById("road-forecast");
 
@@ -122,6 +131,31 @@ const horizonButtons =
 // ============================================================
 // FORMATTING
 // ============================================================
+
+function formatSeconds(value) {
+
+    if (
+        value === null ||
+        value === undefined ||
+        !Number.isFinite(value)
+    ) {
+        return "—";
+    }
+
+    const sign = value < 0 ? "−" : "";
+    const seconds = Math.round(Math.abs(value));
+
+    if (seconds < 60) {
+        return `${sign}${seconds} sec`;
+    }
+
+    const minutes = Math.floor(seconds / 60);
+    const remainder = seconds % 60;
+
+    return remainder === 0
+        ? `${sign}${minutes} min`
+        : `${sign}${minutes} min ${remainder} sec`;
+}
 
 function formatPercent(value) {
 
@@ -606,119 +640,94 @@ function updateRoadStyles() {
 function updateRoadPanel() {
 
     if (!selectedLink) {
-
-        roadPanel.classList.add(
-            "hidden"
-        );
-
+        roadPanel.classList.add("hidden");
         return;
     }
 
-    const link =
-        selectedLink;
+    const link = selectedLink;
 
-    roadPanel.classList.remove(
-        "hidden"
-    );
+    roadPanel.classList.remove("hidden");
 
     roadName.textContent =
-        link.name
-        || "Unnamed road segment";
+        link.name || "Unnamed road segment";
 
     roadCurrent.textContent =
-        formatPercent(
-            link.current
-        );
+        formatSeconds(link.current_delay_seconds);
+
+    roadCurrentRelative.textContent =
+        formatPercent(link.current) + " vs free flow";
+
+    const horizon = selectedHorizon;
+
+    const forecastRelative =
+        horizon === "now"
+            ? link.current
+            : link[`forecast_${horizon}`];
+
+    const forecastDelay =
+        horizon === "now"
+            ? link.current_delay_seconds
+            : link[`forecast_${horizon}_delay_seconds`];
+
+    const forecastTravelTime =
+        horizon === "now"
+            ? link.current_travel_time_seconds
+            : link[`forecast_${horizon}_travel_time_seconds`];
+
+    roadForecastLabel.textContent =
+        horizon === "now"
+            ? "CURRENT DELAY"
+            : `+${horizon} MIN FORECAST`;
+
+    roadForecast.textContent =
+        formatSeconds(forecastDelay);
+
+    roadForecastRelative.textContent =
+        formatPercent(forecastRelative) + " vs free flow";
+
+    roadTravelTime.textContent =
+        formatSeconds(forecastTravelTime);
+
+    roadChange.className = "";
 
     if (
-        selectedHorizon === "now"
+        horizon === "now" ||
+        forecastDelay === null ||
+        forecastDelay === undefined ||
+        link.current_delay_seconds === null ||
+        link.current_delay_seconds === undefined
     ) {
 
-        roadForecastLabel.textContent =
-            "SELECT A HORIZON";
-
-        roadForecast.textContent =
-            "—";
-
-        roadChange.textContent =
-            "—";
-
-        roadChange.className = "";
+        roadChange.textContent = "—";
 
     } else {
 
-        const key =
-            HORIZON_KEYS[
-                selectedHorizon
-            ];
+        const change =
+            forecastDelay - link.current_delay_seconds;
 
-        const forecast =
-            link[key];
+        const sign =
+            change > 0 ? "+" : "";
 
-        roadForecastLabel.textContent =
-            `+${selectedHorizon} MIN`;
+        roadChange.textContent =
+            Math.abs(change) < 0.5
+                ? "≈ no change"
+                : `${sign}${formatSeconds(change)}`;
 
-        roadForecast.textContent =
-            formatPercent(
-                forecast
-            );
-
-        if (
-            forecast === null ||
-            forecast === undefined ||
-            link.current === null ||
-            link.current === undefined
-        ) {
-
-            roadChange.textContent =
-                "—";
-
-            roadChange.className = "";
-
+        if (change < -0.5) {
+            roadChange.className = "improving";
+        } else if (change > 0.5) {
+            roadChange.className = "worsening";
         } else {
-
-            const change =
-                forecast
-                - link.current;
-
-            roadChange.textContent =
-                formatChange(
-                    change
-                );
-
-            if (change < -0.005) {
-
-                roadChange.className =
-                    "improving";
-
-            } else if (
-                change > 0.005
-            ) {
-
-                roadChange.className =
-                    "worsening";
-
-            } else {
-
-                roadChange.className =
-                    "stable";
-            }
+            roadChange.className = "stable";
         }
     }
 
-
-    if (
-        link.status
-        === "full_history"
-    ) {
+    if (link.status === "full_history") {
 
         roadModelStatus.textContent =
             "Full recent traffic history available.";
 
-    } else if (
-        link.status
-        === "warming_up"
-    ) {
+    } else if (link.status === "warming_up") {
 
         roadModelStatus.textContent =
             "Forecast warming up — recent lag history is still accumulating.";
@@ -729,7 +738,6 @@ function updateRoadPanel() {
             "Current traffic measurement unavailable for this segment.";
     }
 }
-
 
 // ============================================================
 // HORIZON SELECTION
@@ -988,5 +996,3 @@ async function loadForecastData() {
 // ============================================================
 
 loadForecastData();
-
-
